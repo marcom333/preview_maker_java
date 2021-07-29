@@ -1,2 +1,2 @@
 frames:4x4
-ffmpeg:I:\Programas\ffmpeg\ffmpeg
+ffmpeg:C:\ffmepg\ffmpeg.exe

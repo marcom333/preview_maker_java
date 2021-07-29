@@ -18,6 +18,7 @@ import java.awt.RenderingHints;
 import java.io.FileReader;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import shine.htetaung.giffer.Giffer;
 
 /**
  *
@@ -43,9 +44,22 @@ public class PreviewMain extends javax.swing.JFrame {
     double fpsp = 0;
     
     public PreviewMain() {
+        readConfig();
         initComponents();
         //this.setLocationRelativeTo(null);
-        readConfig();
+    }
+
+    private String miniature(){
+        if(tw == 1){
+            return "/previewvideo/1x1.jpg";
+        }
+        if(tw == 2){
+            return "/previewvideo/1x1.jpg";
+        }
+        if(tw == 3){
+            return "/previewvideo/1x1.jpg";
+        }
+        return "/previewvideo/4x4.jpg";
     }
 
     @SuppressWarnings("unchecked")
@@ -73,7 +87,7 @@ public class PreviewMain extends javax.swing.JFrame {
             }
         });
 
-        info.setIcon(new javax.swing.ImageIcon(getClass().getResource("/previewvideo/gato.jpg"))); // NOI18N
+        info.setIcon(new javax.swing.ImageIcon(getClass().getResource( this.miniature() ))); // NOI18N
         info.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 infoMouseClicked(evt);
@@ -231,12 +245,30 @@ public class PreviewMain extends javax.swing.JFrame {
         return Double.parseDouble(horas)*3600 + Double.parseDouble(minutos)*60  + Math.floor(Double.parseDouble(segundos));
     }
     public String makePic(String duration, String archivo){
-        logger("Making Pic ...");
-        ArrayList<Image> pics = new ArrayList();
+        ArrayList<BufferedImage> pics = new ArrayList<BufferedImage>();
         try{
             logger("Trying to read Pics");
             for (int i = 1; i <= (PreviewMain.th * PreviewMain.tw); i++) {
-                pics.add(ImageIO.read(new File("prev/img"+i+".jpg")));
+                pics.add(this.scaleImage(ImageIO.read(new File("prev/img"+i+".jpg")), 720, 720, Color.BLACK));
+                logger(i+" of "+(PreviewMain.th * PreviewMain.tw));
+            }
+            File f = new File(archivo);
+            log.setText("<html>"+log.getText()+"<br>"+f.getAbsolutePath()+"</html>");
+            Giffer.generateFromBI( pics.toArray(new BufferedImage[0]), f.getAbsolutePath()+"_preview_.gif", 100, true);
+        }
+        catch(Exception ex){
+            logger("Can't Read");
+            return PreviewMain.ERROR_FAIL_LOAD_PICS + ex.toString();
+        }
+        
+
+        /*
+        logger("Making Pic ...");
+        ArrayList<Image> picsbi = new ArrayList();
+        try{
+            logger("Trying to read Pics");
+            for (int i = 1; i <= (PreviewMain.th * PreviewMain.tw); i++) {
+                picsbi.add(ImageIO.read(new File("prev/img"+i+".jpg")));
                 logger(i+" of "+(PreviewMain.th * PreviewMain.tw));
             }
         }
@@ -245,8 +277,8 @@ public class PreviewMain extends javax.swing.JFrame {
             return PreviewMain.ERROR_FAIL_LOAD_PICS;
         }
         logger("Read Success");
-        int width = pics.get(0).getWidth(info) * PreviewMain.tw + 40;
-        int height = pics.get(0).getHeight(info) * PreviewMain.th + 40;
+        int width = picsbi.get(0).getWidth(info) * PreviewMain.tw + 40;
+        int height = picsbi.get(0).getHeight(info) * PreviewMain.th + 40;
         logger("Starting Map: "+width+" x "+height);
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         logger("Map Start");
@@ -261,7 +293,7 @@ public class PreviewMain extends javax.swing.JFrame {
         logger("creating map");
         for(int h = 0; h<PreviewMain.th; h++){
             for(int w = 0; w<PreviewMain.tw; w++){
-                g2d.drawImage(pics.get(index++), (wr*w)+10, (hr*h)+10, info);
+                g2d.drawImage(picsbi.get(index++), (wr*w)+10, (hr*h)+10, info);
             }
         }
         logger("Map Done");
@@ -289,6 +321,7 @@ public class PreviewMain extends javax.swing.JFrame {
             logger("Can't Save File");
             return PreviewMain.ERROR_FAIL_SAVE_PIC;
         }
+                /**/
         return "";
     }
     private BufferedImage scaleImage(BufferedImage img, int width, int height, Color background) {
