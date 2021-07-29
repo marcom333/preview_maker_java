@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import javax.imageio.ImageIO;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.io.FileReader;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
@@ -35,12 +36,16 @@ public class PreviewMain extends javax.swing.JFrame {
     
     public boolean canLog = false;
     
+    public String ffmpegUrl = "";
+    public String mode = "";
+    
     int anterior = 0;
     double fpsp = 0;
     
     public PreviewMain() {
         initComponents();
         //this.setLocationRelativeTo(null);
+        readConfig();
     }
 
     @SuppressWarnings("unchecked")
@@ -135,7 +140,43 @@ public class PreviewMain extends javax.swing.JFrame {
     public static int getPrevFiles(){
         return (new File("prev") ).listFiles().length;
     }
-    
+    public void readConfig(){
+        try{
+            File file = new File("config.txt"); 
+            BufferedReader br = new BufferedReader(new FileReader(file)); 
+            String string;
+            while ((string = br.readLine()) != null){
+                if(string.contains("frames")){
+                    mode = string.replace("frames:", "");
+                    if(mode.contains("4x4")){
+                        PreviewMain.th = 4;
+                        PreviewMain.tw = 4;
+                    }
+                    if(mode.contains("3x3")){
+                        PreviewMain.th = 3;
+                        PreviewMain.tw = 3;
+                    }
+                    if(mode.contains("2x2")){
+                        PreviewMain.th = 2;
+                        PreviewMain.tw = 2;
+                    }
+                    if(mode.contains("1x1")){
+                        PreviewMain.th = 1;
+                        PreviewMain.tw = 1;
+                    }
+                    System.out.println(mode);
+                }
+                if(string.contains("ffmpeg")){
+                    ffmpegUrl = string.replace("ffmpeg:", "");
+                    System.out.println(ffmpegUrl);
+                }
+                System.out.println(string);
+            }
+        }
+        catch(Exception ex){
+            System.out.println("Trono papu"+ex.toString());
+        }
+    } 
     // Llamadas ordenadas
     public String searchVideo(String url){
         File folder =  new File(url);
@@ -161,7 +202,8 @@ public class PreviewMain extends javax.swing.JFrame {
     public String getVideoTime(String archivo){
         try{
             String data = "";
-            String info_command = "g:/ffmpeg/ffmpeg -i \"" + archivo + "\"";
+            String info_command = ffmpegUrl + " -i \"" + archivo + "\"";
+            System.out.println(info_command);
             Process proc = Runtime.getRuntime().exec(info_command);
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
@@ -288,10 +330,10 @@ public class PreviewMain extends javax.swing.JFrame {
             try{ Thread.sleep(1000); } catch(Exception ex){ }
         }
     }
-    
     public boolean startProcess(String archivo){
         try {
-            String preview_command = "run-command.bat \""+archivo+"\" "+ Math.floor(fpsp);
+            String preview_command = ffmpegUrl + " -hwaccel nvdec -i \""+archivo+ "\" -vf fps=1/"+Math.floor(fpsp)+ " \"prev/img%d.jpg\"";
+            System.out.println(preview_command);
             Process proc = Runtime.getRuntime().exec(preview_command);
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
@@ -334,7 +376,6 @@ public class PreviewMain extends javax.swing.JFrame {
             
         }
     }
-    
     public String makeFunction(){
         // Adquirir ruta
         String ruta = pathito.getText();
@@ -369,7 +410,6 @@ public class PreviewMain extends javax.swing.JFrame {
         }
         return "";
     }
-    
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         String ruta = pathito.getText();
         if(ruta.isEmpty()) return ;
@@ -457,7 +497,7 @@ class TofThread implements Runnable{
             if(!p.pathito.getText().isEmpty() && !p.isProcessOn()){
                 try{ Thread.sleep(1000); }
                 catch(Exception ex){ p.logger("Sleep Death"); }
-                p.makeFunction();
+                System.out.println(p.makeFunction());
             }
             else{
                 try{ Thread.sleep(500); } catch(Exception ex){ p.logger("Sleep Death"); }
