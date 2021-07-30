@@ -154,6 +154,7 @@ public class PreviewMain extends javax.swing.JFrame {
         return (new File("prev") ).listFiles().length;
     }
     public void readConfig(){
+        String title = "";
         try{
             File file = new File("config.txt"); 
             BufferedReader br = new BufferedReader(new FileReader(file)); 
@@ -178,6 +179,7 @@ public class PreviewMain extends javax.swing.JFrame {
                         PreviewMain.tw = 1;
                     }
                     System.out.println(frames);
+                    title += frames;
                 }
                 if(string.contains("ffmpeg")){
                     ffmpegUrl = string.replace("ffmpeg:", "");
@@ -186,12 +188,14 @@ public class PreviewMain extends javax.swing.JFrame {
                 if(string.contains("mode")){
                     mode = string.replace("mode:", "");
                     System.out.println(mode);
+                    title += " "+mode;
                 }
             }
         }
         catch(Exception ex){
             System.out.println("Trono papu"+ex.toString());
         }
+        this.setTitle("Preview: "+title);
     } 
     // Llamadas ordenadas
     public String searchVideo(String url){
