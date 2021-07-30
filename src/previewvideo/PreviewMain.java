@@ -37,8 +37,7 @@ public class PreviewMain extends javax.swing.JFrame {
     
     public boolean canLog = false;
     
-    public String ffmpegUrl = "";
-    public String mode = "";
+    public String ffmpegUrl = "", mode = "";
     
     int anterior = 0;
     double fpsp = 0;
@@ -161,30 +160,33 @@ public class PreviewMain extends javax.swing.JFrame {
             String string;
             while ((string = br.readLine()) != null){
                 if(string.contains("frames")){
-                    mode = string.replace("frames:", "");
-                    if(mode.contains("4x4")){
+                    String frames = string.replace("frames:", "");
+                    if(frames.contains("4x4")){
                         PreviewMain.th = 4;
                         PreviewMain.tw = 4;
                     }
-                    if(mode.contains("3x3")){
+                    if(frames.contains("3x3")){
                         PreviewMain.th = 3;
                         PreviewMain.tw = 3;
                     }
-                    if(mode.contains("2x2")){
+                    if(frames.contains("2x2")){
                         PreviewMain.th = 2;
                         PreviewMain.tw = 2;
                     }
-                    if(mode.contains("1x1")){
+                    if(frames.contains("1x1")){
                         PreviewMain.th = 1;
                         PreviewMain.tw = 1;
                     }
-                    System.out.println(mode);
+                    System.out.println(frames);
                 }
                 if(string.contains("ffmpeg")){
                     ffmpegUrl = string.replace("ffmpeg:", "");
                     System.out.println(ffmpegUrl);
                 }
-                System.out.println(string);
+                if(string.contains("mode")){
+                    mode = string.replace("mode:", "");
+                    System.out.println(mode);
+                }
             }
         }
         catch(Exception ex){
@@ -244,7 +246,7 @@ public class PreviewMain extends javax.swing.JFrame {
         String segundos = data.split(":")[2];
         return Double.parseDouble(horas)*3600 + Double.parseDouble(minutos)*60  + Math.floor(Double.parseDouble(segundos));
     }
-    public String makePic(String duration, String archivo){
+    public String makePicGif(String duration, String archivo){
         ArrayList<BufferedImage> pics = new ArrayList<BufferedImage>();
         try{
             logger("Trying to read Pics");
@@ -260,9 +262,9 @@ public class PreviewMain extends javax.swing.JFrame {
             logger("Can't Read");
             return PreviewMain.ERROR_FAIL_LOAD_PICS + ex.toString();
         }
-        
-
-        /*
+        return "";
+    }
+    public String makePicJpg(String duration, String archivo){
         logger("Making Pic ...");
         ArrayList<Image> picsbi = new ArrayList();
         try{
@@ -321,7 +323,6 @@ public class PreviewMain extends javax.swing.JFrame {
             logger("Can't Save File");
             return PreviewMain.ERROR_FAIL_SAVE_PIC;
         }
-                /**/
         return "";
     }
     private BufferedImage scaleImage(BufferedImage img, int width, int height, Color background) {
@@ -428,7 +429,11 @@ public class PreviewMain extends javax.swing.JFrame {
         // ¿Se puede hacer imagen?
         if(PreviewMain.getPrevFiles() >= (PreviewMain.tw * PreviewMain.th) ){
             logger("Making Picture");
-            String pic = makePic(time, archivo);
+            String pic = "";
+            if(mode.equals("gif"))
+                pic = makePicGif(time, archivo);
+            else
+                pic = makePicJpg(time, archivo);
             logger("Done");
             if(!pic.isEmpty()) return pic;
             this.anterior++;

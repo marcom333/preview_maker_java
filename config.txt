@@ -1,2 +1,3 @@
 frames:4x4
 ffmpeg:C:\ffmepg\ffmpeg.exe
+mode:gif
